@@ -48,7 +48,7 @@ if not filtered_df.empty:
         scope='europe',
         color_continuous_scale="YlGnBu",
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
-        range_color=[min_value, max_value]  # Explicitly set the color range based on filtered data
+        
     )
 
     # Update the map appearance
