@@ -51,6 +51,10 @@ if not filtered_df.empty:
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
         range_color=[min_value, max_value]  # Explicitly set the color range based on filtered data
     )
+
+    # Update the map appearance
+    choropleth_fig.update_geos(fitbounds="locations", visible=False)
+    st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
 
