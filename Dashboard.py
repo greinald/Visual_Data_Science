@@ -26,7 +26,6 @@ selected_year = st.sidebar.slider(
     step=1
 )
 
-# Choropleth Map
 filtered_df = df[(df['Indicator'] == selected_indicator) & (df['Year'] == selected_year)]
 
 # Ensure the 'VALUE' column is numeric and handle errors
@@ -37,7 +36,11 @@ filtered_df = filtered_df.dropna(subset=['VALUE'])
 
 # Check if the filtered data is empty after cleaning
 if not filtered_df.empty:
-    # Create the Choropleth map
+    # Define the min and max values of the filtered 'VALUE' column
+    min_value = filtered_df['VALUE'].min()
+    max_value = filtered_df['VALUE'].max()
+
+    # Create the Choropleth map with the updated color range
     choropleth_fig = px.choropleth(
         filtered_df,
         locations="Country",
@@ -45,10 +48,9 @@ if not filtered_df.empty:
         color="VALUE",
         scope='europe',
         color_continuous_scale="YlGnBu",
-        title=f"Choropleth Map for {selected_indicator} ({selected_year})"
+        title=f"Choropleth Map for {selected_indicator} ({selected_year})",
+        range_color=[min_value, max_value]  # Explicitly set the color range based on filtered data
     )
-    choropleth_fig.update_geos(fitbounds="locations", visible=False)
-    st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
 
