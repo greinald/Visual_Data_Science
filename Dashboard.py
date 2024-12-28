@@ -4,7 +4,7 @@ import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 
 # Load the dataset
-df = pd.read_csv('https://github.com/greinald/Visual_Data_Science/blob/main/Final_Data.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
 # Streamlit app layout
 st.title("Interactive Dashboard for European Data")
