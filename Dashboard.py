@@ -25,7 +25,17 @@ selected_year = st.sidebar.slider(
     step=1
 )
 
-filtered_df = df[(df['Indicator'] == selected_indicator) & (df['Year'] == selected_year)]
+filtered_data = df.loc[
+    (df.Region == 'Europe') &
+    (df['Unit of measurement'] != 'Rate per 100,000 population') &
+    (df['Age'] == 'Total') &
+    (df['Sex'] == 'Total') &
+    (df['Dimension'] == 'Total') &
+    (df['Indicator']!='Persons arrested/suspected for intentional homicide') 
+]
+
+
+filtered_df = filtered_data[(df['Indicator'] == selected_indicator) & (filtered_data['Year'] == selected_year)]
 
 # Ensure the 'VALUE' column is numeric and handle errors
 filtered_df['VALUE'] = pd.to_numeric(filtered_df['VALUE'], errors='coerce')
@@ -53,7 +63,6 @@ if not filtered_df.empty:
 
     # Update the map appearance
     choropleth_fig.update_geos(fitbounds="locations", visible=False)
-    st.write(filtered_df.head())
     st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
