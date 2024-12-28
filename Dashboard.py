@@ -53,6 +53,7 @@ if not filtered_df.empty:
 
     # Update the map appearance
     choropleth_fig.update_geos(fitbounds="locations", visible=False)
+    st.write(filtered_df.head())
     st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
