@@ -79,6 +79,7 @@ bar_filtered_df = df[
     (df['Indicator'] == selected_indicator) &
     (df['Year'] == selected_year)
 ]
+bar_filtered_df['VALUE'] = bar_filtered_df['VALUE'].astype(int)
 
 if not bar_filtered_df.empty:
     category_means = bar_filtered_df.groupby('Category')['VALUE'].mean().reset_index()
@@ -171,8 +172,9 @@ if not scatter_filtered_df.empty:
 else:
     st.write("No data available for the scatter plot.")
 
-# Femicide Bar Chart
 st.subheader(f"Femicide Rates by Country ({selected_year})")
+
+# Filter the data for the selected year and indicator
 femicide_filtered_df = df[
     (df['Region'] == 'Europe') &
     (df['Sex'] == 'Female') &
@@ -184,21 +186,55 @@ femicide_filtered_df = df[
     (df['Indicator'] == selected_indicator)
 ]
 
+# Convert VALUE to numeric and drop rows with NaN
+femicide_filtered_df['VALUE'] = pd.to_numeric(femicide_filtered_df['VALUE'], errors='coerce')
+femicide_filtered_df = femicide_filtered_df.dropna(subset=['VALUE'])
+femicide_filtered_df['VALUE'] = femicide_filtered_df['VALUE'].astype(int)
+
+
 if not femicide_filtered_df.empty:
+    # Group by country and sum values
     femicide_totals = femicide_filtered_df.groupby('Country')['VALUE'].sum().reset_index()
+
+    # Sort by VALUE and get the top 10 countries
     top_countries = femicide_totals.sort_values(by='VALUE', ascending=False).head(10)
 
+    # Add Austria if not in the top 10
     if 'Austria' not in top_countries['Country'].values:
         austria_data = femicide_totals[femicide_totals['Country'] == 'Austria']
         top_countries = pd.concat([top_countries, austria_data])
 
+    # Add a 'Color' column to differentiate Austria
+    top_countries['Color'] = 'Other Countries'
+    top_countries.loc[top_countries['Country'] == 'Austria', 'Color'] = 'Austria'
+
+    # Create the bar chart
     femicide_fig = px.bar(
         top_countries,
         x='Country',
         y='VALUE',
-        title=f"Femicide Rates in Top European Countries ({selected_year})",
+        title=f"Victims of Femicide by Count in Top 10 European Countries and Austria ({selected_year})",
+        color='Color',
+        color_discrete_map={'Austria': 'red', 'Other Countries': 'darkblue'},
+        template='plotly_white',
         text_auto=True
     )
+
+    # Update the bar chart appearance
+    femicide_fig.update_traces(texttemplate='%{y:,.0f}', textposition='outside')
+    femicide_fig.update_yaxes(title_text='Total Femicide Rates', showgrid=True, gridwidth=0.5, gridcolor='LightGrey')
+    femicide_fig.update_xaxes(title_text='Country', showgrid=False)
+    femicide_fig.update_layout(
+        title_font=dict(size=18, family='Arial, sans-serif', color='darkblue'),
+        font=dict(family="Arial, sans-serif", size=12),
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        bargap=0.15,
+        bargroupgap=0.1,
+        plot_bgcolor='white'
+    )
+
+    # Display the bar chart
     st.plotly_chart(femicide_fig)
 else:
     st.write("No data available for femicide rates.")
