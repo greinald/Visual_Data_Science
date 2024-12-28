@@ -15,7 +15,7 @@ st.sidebar.header("Filters")
 selected_indicator = st.sidebar.selectbox(
     "Select an Indicator",
     options=df['Indicator'].unique(),
-    index=0
+    index=1
 )
 
 selected_year = st.sidebar.slider(
