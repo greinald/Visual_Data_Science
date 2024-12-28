@@ -71,20 +71,28 @@ if not filtered_df.empty:
 else:
     st.write("No data available for the selected indicator and year.")
 
-# Bar Chart
+
+# Bar Chart for Situational Context
 st.subheader(f"Bar Chart: {selected_indicator} ({selected_year})")
+
+
 bar_filtered_df = df[
     (df['Dimension'] == 'by situational context') &
     (df['Unit of measurement'] == 'Counts') &
     (df['Indicator'] == selected_indicator) &
     (df['Year'] == selected_year)
 ]
-bar_filtered_df['VALUE'] = bar_filtered_df['VALUE'].astype(int)
+
+
+bar_filtered_df['VALUE'] = pd.to_numeric(bar_filtered_df['VALUE'], errors='coerce')
+bar_filtered_df = bar_filtered_df.dropna(subset=['VALUE'])
 
 if not bar_filtered_df.empty:
+
     category_means = bar_filtered_df.groupby('Category')['VALUE'].mean().reset_index()
     category_means_sorted = category_means.sort_values(by='VALUE', ascending=True)
 
+    
     bar_fig = px.bar(
         category_means_sorted,
         x='VALUE',
@@ -93,10 +101,31 @@ if not bar_filtered_df.empty:
         title=f"Average Rates by Category ({selected_indicator}) in {selected_year}",
         text_auto=True
     )
+
+    
+    bar_fig.update_traces(
+        texttemplate='%{x:,.0f}k',
+        textposition='outside',
+        marker_color='darkblue'
+    )
+    bar_fig.update_yaxes(title_text='Situational Context', showgrid=False)
+    bar_fig.update_xaxes(title_text='Counts (Tsd.)', showgrid=True, gridwidth=0.5, gridcolor='LightGrey')
+    bar_fig.update_layout(
+        title_font=dict(size=18, family='Arial, sans-serif', color='darkblue'),
+        xaxis_tickangle=-45,
+        font=dict(family="Arial, sans-serif", size=12),
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        bargap=0.15,
+        bargroupgap=0.1,
+        plot_bgcolor='white'
+    )
+
+    
     st.plotly_chart(bar_fig)
 else:
-    st.write("No data available for the bar chart.")
-
+    
+    st.write(f"No data available for {selected_indicator} in {selected_year}.")
 # Scatter Plot
 st.subheader(f"Scatter Plot: Unemployment Rate vs. Homicide Rate ({selected_year})")
 scatter_filtered_df = df[
