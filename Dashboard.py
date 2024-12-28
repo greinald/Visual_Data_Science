@@ -19,9 +19,9 @@ selected_indicator = st.sidebar.selectbox(
 
 selected_year = st.sidebar.slider(
     "Select Year",
-    min_value=int(2000),
-    max_value=int(2020),
-    value=int(df['Year'].min()),
+    min_value=2000,
+    max_value=2020,
+    value=2000,
     step=1
 )
 
@@ -62,6 +62,10 @@ if not filtered_df.empty:
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
         range_color=[min_value, max_value]
         
+    )
+    choropleth_fig.update_layout(
+    title_font=dict(size=18, family='Arial, sans-serif', color='darkblue'),
+    geo=dict(fitbounds="locations", visible=False),  
     )
 
 
@@ -163,6 +167,10 @@ if not scatter_filtered_df.empty:
         title=f"Scatter Plot for {selected_indicator} ({selected_year})"
     )
     
+    scatter_fig.update_layout(
+    title_font=dict(size=18, family='Arial, sans-serif', color='darkblue'),
+    geo=dict(fitbounds="locations", visible=False),  
+    )
     if austria is not None:
         scatter_fig.add_annotation(
             x=austria['Unemployment in %'],
