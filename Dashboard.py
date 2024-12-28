@@ -3,9 +3,8 @@ import pandas as pd
 import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 
-# Load the dataset
-df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
+df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
 # Streamlit app layout
 st.title("Interactive Dashboard for European Data")
@@ -36,7 +35,7 @@ filtered_df = filtered_df.dropna(subset=['VALUE'])
 
 # Check if the filtered data is empty after cleaning
 if not filtered_df.empty:
-    # Define the min and max values of the filtered 'VALUE' column
+    # Define the min and max values of the filtered 'VALUE' column for the color scale
     min_value = filtered_df['VALUE'].min()
     max_value = filtered_df['VALUE'].max()
 
