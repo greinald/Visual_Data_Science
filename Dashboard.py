@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
-df = df.loc[df('Indicator')!='Persons arrested/suspected for intentional homicide']
+df = df.loc[df['Indicator']!='Persons arrested/suspected for intentional homicide']
 
 st.title("Interactive Dashboard for European Data")
 st.sidebar.header("Filters")
