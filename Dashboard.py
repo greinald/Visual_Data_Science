@@ -58,11 +58,13 @@ if not filtered_df.empty:
         scope='europe',
         color_continuous_scale="YlGnBu",
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
+        range_color=[min_value, max_value]
         
     )
 
     # Update the map appearance
     choropleth_fig.update_geos(fitbounds="locations", visible=False)
+    st.write(filtered_df.head())
     st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
