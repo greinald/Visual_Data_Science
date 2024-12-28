@@ -6,11 +6,11 @@ from sklearn.preprocessing import MinMaxScaler
 
 df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
-# Streamlit app layout
+
 st.title("Interactive Dashboard for European Data")
 st.sidebar.header("Filters")
 
-# Sidebar inputs
+
 selected_indicator = st.sidebar.selectbox(
     "Select an Indicator",
     options=df['Indicator'].unique(),
@@ -27,10 +27,11 @@ selected_year = st.sidebar.slider(
 
 filtered_data = df.loc[
     (df.Region == 'Europe') &
-    (df['Unit of measurement'] != 'Rate per 100,000 population') &
+    (df['Unit of measurement'] == 'Rate per 100,000 population') &
     (df['Age'] == 'Total') &
     (df['Sex'] == 'Total') &
     (df['Dimension'] == 'Total') &
+    
     (df['Indicator']!='Persons arrested/suspected for intentional homicide') 
 ]
 
@@ -38,18 +39,18 @@ filtered_data = df.loc[
 filtered_df = filtered_data[(df['Indicator'] == selected_indicator) & (filtered_data['Year'] == selected_year)]
 
 # Ensure the 'VALUE' column is numeric and handle errors
-filtered_df['VALUE'] = pd.to_numeric(filtered_df['VALUE'], errors='coerce')
+filtered_df['VALUE'] = int(filtered_df['VALUE'])
 
-# Drop rows with NaN values in the 'VALUE' column
+
 filtered_df = filtered_df.dropna(subset=['VALUE'])
 
-# Check if the filtered data is empty after cleaning
+
 if not filtered_df.empty:
-    # Define the min and max values of the filtered 'VALUE' column for the color scale
+
     min_value = filtered_df['VALUE'].min()
     max_value = filtered_df['VALUE'].max()
 
-    # Create the Choropleth map with the updated color range
+
     choropleth_fig = px.choropleth(
         filtered_df,
         locations="Country",
@@ -62,7 +63,7 @@ if not filtered_df.empty:
         
     )
 
-    # Update the map appearance
+
     choropleth_fig.update_geos(fitbounds="locations", visible=False)
     st.write(filtered_df.head())
     st.plotly_chart(choropleth_fig)
