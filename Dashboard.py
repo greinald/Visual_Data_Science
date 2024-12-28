@@ -3,9 +3,10 @@ import pandas as pd
 import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 
+# Load dataset
 df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
-# Streamlit app layout
+# Streamlit layout
 st.title("Interactive Dashboard for European Data")
 st.sidebar.header("Filters")
 
@@ -18,45 +19,50 @@ selected_indicator = st.sidebar.selectbox(
 
 selected_year = st.sidebar.slider(
     "Select Year",
-    min_value=int(2000),
-    max_value=int(2020),
-    value=int(df['Year'].min()),
+    min_value=1990,
+    max_value=2020,
+    value=2005,
     step=1
 )
 
-# Filter the data based on indicator and year
+# Filter data based on selections
 filtered_df = df[(df['Indicator'] == selected_indicator) & (df['Year'] == selected_year)]
 
-# Ensure 'VALUE' is numeric and handle errors
+# Ensure 'VALUE' is numeric
 filtered_df['VALUE'] = pd.to_numeric(filtered_df['VALUE'], errors='coerce')
-
-# Drop rows with NaN values in the 'VALUE' column
 filtered_df = filtered_df.dropna(subset=['VALUE'])
 
-# Check if there is data after filtering
+# Check for data availability
 if not filtered_df.empty:
-    # Normalize 'VALUE' using MinMaxScaler to ensure a consistent range for color scale
+    # Normalize values
     scaler = MinMaxScaler()
-    normalized_values = scaler.fit_transform(filtered_df[['VALUE']])
-    filtered_df['Normalized_Value'] = normalized_values  # Assign normalized values to a new column
+    filtered_df['Normalized_Value'] = scaler.fit_transform(filtered_df[['VALUE']])
 
-    # Create the Choropleth map
+    # Check for country mismatches (debugging)
+    missing_countries = filtered_df[~filtered_df['Country'].isin(px.data.gapminder()['country'])]['Country'].unique()
+    if len(missing_countries) > 0:
+        st.write("Warning: The following countries may not be mapped:", missing_countries)
+
+    # Create the map
     choropleth_fig = px.choropleth(
         filtered_df,
         locations="Country",
         locationmode="country names",
-        color="Normalized_Value",  # Use the normalized value for color
-        scope='europe',
+        color="Normalized_Value",
+        scope="europe",
         color_continuous_scale="YlGnBu",
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
-        range_color=[0, 1]  # Set the range to [0, 1] for normalized data
+        range_color=[0, 1],  # Force range to [0, 1]
+        hover_data={"Country": True, "Normalized_Value": True, "VALUE": True},  # Debugging
     )
 
-    # Update the map appearance
+    # Update appearance
     choropleth_fig.update_geos(fitbounds="locations", visible=False)
     st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
+
+
 # Bar Chart
 st.subheader(f"Bar Chart: {selected_indicator} ({selected_year})")
 bar_filtered_df = df[
