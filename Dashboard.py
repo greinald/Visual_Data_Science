@@ -25,30 +25,35 @@ selected_year = st.sidebar.slider(
     step=1
 )
 
+# Filter the data based on indicator and year
 filtered_df = df[(df['Indicator'] == selected_indicator) & (df['Year'] == selected_year)]
 
-# Ensure the 'VALUE' column is numeric and handle errors
+# Ensure 'VALUE' is numeric and handle errors
 filtered_df['VALUE'] = pd.to_numeric(filtered_df['VALUE'], errors='coerce')
 
 # Drop rows with NaN values in the 'VALUE' column
 filtered_df = filtered_df.dropna(subset=['VALUE'])
 
-# Check if the filtered data is empty after cleaning
+# Check if there is data after filtering
 if not filtered_df.empty:
-    # Define the min and max values of the filtered 'VALUE' column for the color scale
-    min_value = filtered_df['VALUE'].min()
-    max_value = filtered_df['VALUE'].max()
+    # Normalize 'VALUE' using MinMaxScaler to ensure a consistent range for color scale
+    scaler = MinMaxScaler()
+    filtered_df['Normalized_Value'] = scaler.fit_transform(filtered_df[['VALUE']])
 
-    # Create the Choropleth map with the updated color range
+    # Define min and max values based on the normalized data
+    min_value = filtered_df['Normalized_Value'].min()
+    max_value = filtered_df['Normalized_Value'].max()
+
+    # Create the Choropleth map
     choropleth_fig = px.choropleth(
         filtered_df,
         locations="Country",
         locationmode="country names",
-        color="VALUE",
+        color="Normalized_Value",  # Use the normalized value for color
         scope='europe',
         color_continuous_scale="YlGnBu",
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
-        range_color=[min_value, max_value]  # Explicitly set the color range based on filtered data
+        range_color=[min_value, max_value]  # Set the color range based on normalized data
     )
 
     # Update the map appearance
@@ -56,7 +61,6 @@ if not filtered_df.empty:
     st.plotly_chart(choropleth_fig)
 else:
     st.write("No data available for the selected indicator and year.")
-
 # Bar Chart
 st.subheader(f"Bar Chart: {selected_indicator} ({selected_year})")
 bar_filtered_df = df[
