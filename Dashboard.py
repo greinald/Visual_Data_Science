@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
 
-
 df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
 # Streamlit app layout
@@ -38,11 +37,8 @@ filtered_df = filtered_df.dropna(subset=['VALUE'])
 if not filtered_df.empty:
     # Normalize 'VALUE' using MinMaxScaler to ensure a consistent range for color scale
     scaler = MinMaxScaler()
-    filtered_df['Normalized_Value'] = scaler.fit_transform(filtered_df[['VALUE']])
-
-    # Define min and max values based on the normalized data
-    min_value = filtered_df['Normalized_Value'].min()
-    max_value = filtered_df['Normalized_Value'].max()
+    normalized_values = scaler.fit_transform(filtered_df[['VALUE']])
+    filtered_df['Normalized_Value'] = normalized_values  # Assign normalized values to a new column
 
     # Create the Choropleth map
     choropleth_fig = px.choropleth(
@@ -53,7 +49,7 @@ if not filtered_df.empty:
         scope='europe',
         color_continuous_scale="YlGnBu",
         title=f"Choropleth Map for {selected_indicator} ({selected_year})",
-        range_color=[min_value, max_value]  # Set the color range based on normalized data
+        range_color=[0, 1]  # Set the range to [0, 1] for normalized data
     )
 
     # Update the map appearance
