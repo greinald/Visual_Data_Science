@@ -6,6 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 # Load the dataset
 df = pd.read_csv('https://raw.githubusercontent.com/greinald/Visual_Data_Science/refs/heads/main/Final_Data.csv')
 
+
 # Streamlit app layout
 st.title("Interactive Dashboard for European Data")
 st.sidebar.header("Filters")
@@ -19,17 +20,24 @@ selected_indicator = st.sidebar.selectbox(
 
 selected_year = st.sidebar.slider(
     "Select Year",
-    min_value=int(df['Year'].min()),
-    max_value=int(df['Year'].max()),
+    min_value=int(2000),
+    max_value=int(2020),
     value=int(df['Year'].min()),
     step=1
 )
 
 # Choropleth Map
-st.subheader(f"Choropleth Map: {selected_indicator} ({selected_year})")
 filtered_df = df[(df['Indicator'] == selected_indicator) & (df['Year'] == selected_year)]
 
+# Ensure the 'VALUE' column is numeric and handle errors
+filtered_df['VALUE'] = pd.to_numeric(filtered_df['VALUE'], errors='coerce')
+
+# Drop rows with NaN values in the 'VALUE' column
+filtered_df = filtered_df.dropna(subset=['VALUE'])
+
+# Check if the filtered data is empty after cleaning
 if not filtered_df.empty:
+    # Create the Choropleth map
     choropleth_fig = px.choropleth(
         filtered_df,
         locations="Country",
@@ -91,6 +99,11 @@ if not scatter_filtered_df.empty:
         0.5 * category_means['Norm_Homicide'] +
         0.5 * category_means['Norm_Unemployment']
     )
+    best_country = category_means.loc[category_means['Combined_Score'] == category_means['Combined_Score'].min(), 'Country'].values[0]
+    worst_country = category_means.loc[category_means['Combined_Score'] == category_means['Combined_Score'].max(), 'Country'].values[0]
+
+    # Step 8: Extract Austria's data for annotation
+    austria = category_means.loc[category_means['Country'] == 'Austria'].iloc[0] if 'Austria' in category_means['Country'].values else None
 
     scatter_fig = px.scatter(
         category_means,
@@ -100,6 +113,41 @@ if not scatter_filtered_df.empty:
         size='VALUE',
         title=f"Scatter Plot for {selected_indicator} ({selected_year})"
     )
+    
+    if austria is not None:
+        scatter_fig.add_annotation(
+            x=austria['Unemployment in %'],
+            y=austria['VALUE'],
+            text=f'Austria: {austria["Country"]}',
+            showarrow=True,
+            arrowhead=2,
+            ax=-100,
+            ay=-50,
+            font=dict(size=12, color="blue"),
+        )
+
+    scatter_fig.add_annotation(
+        x=category_means.loc[category_means['Country'] == best_country, 'Unemployment in %'].values[0],
+        y=category_means.loc[category_means['Country'] == best_country, 'VALUE'].values[0],
+        text=f'Best Performer: {best_country}',
+        showarrow=True,
+        arrowhead=2,
+        ax=-100,
+        ay=-50,
+        font=dict(size=12, color="green"),
+    )
+
+    scatter_fig.add_annotation(
+        x=category_means.loc[category_means['Country'] == worst_country, 'Unemployment in %'].values[0],
+        y=category_means.loc[category_means['Country'] == worst_country, 'VALUE'].values[0],
+        text=f'Worst Performer: {worst_country}',
+        showarrow=True,
+        arrowhead=2,
+        ay=100,
+        ax=50,
+        font=dict(size=10, color="red"),
+    )    
+
     st.plotly_chart(scatter_fig)
 else:
     st.write("No data available for the scatter plot.")
@@ -135,4 +183,3 @@ if not femicide_filtered_df.empty:
     st.plotly_chart(femicide_fig)
 else:
     st.write("No data available for femicide rates.")
-
