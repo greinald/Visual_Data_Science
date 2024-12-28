@@ -38,8 +38,9 @@ filtered_data = df.loc[
 
 filtered_df = filtered_data[(df['Indicator'] == selected_indicator) & (filtered_data['Year'] == selected_year)]
 
-# Ensure the 'VALUE' column is numeric and handle errors
-filtered_df['VALUE'] = int(filtered_df['VALUE'])
+
+filtered_df['VALUE'] = filtered_df['VALUE'].astype(int)
+
 
 
 filtered_df = filtered_df.dropna(subset=['VALUE'])
